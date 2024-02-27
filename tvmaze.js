@@ -5,6 +5,7 @@ const apiURL = "http://api.tvmaze.com/";
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
+const $episodesList = $("#episodesList");
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -23,6 +24,12 @@ async function getShowsByTerm(term) {
       q: term,
     },
   });
+  console.log("show ID using []", response.data[1].show.id); //extract info from response.data array
+
+  //or use a forEach loop to get the array data
+  console.log(response.data.forEach((response) => {
+    console.log("show name using forEach loop", response.show.name);
+  }));
 
   return response.data.map((result) => {
     const show = result.show;
@@ -35,7 +42,6 @@ async function getShowsByTerm(term) {
     };
   });
 }
-
 /** Given list of shows, create markup for each and to DOM */
 
 function populateShows(shows) {
@@ -87,8 +93,38 @@ $searchForm.on("submit", async function (evt) {
  *      { id, name, season, number }
  */
 
-// async function getEpisodesOfShow(id) { }
+async function getEpisodesOfShow(id) {
+  const response = await axios({
+    baseURL: apiURL,
+    url: `shows/${id}/episodes`,
+    method: "GET",
+  });
+
+  return response.data.map(ev => ({
+    id: ev.id,
+    name: ev.name,
+    season: ev.season,
+    number: ev.number,
+  }));
+ }
 
 /** Write a clear docstring for this function... */
 
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) {
+  $episodesList.empty(); //Clear previous episodes
+
+  for(let episode of episodes) {
+    const $item = $(`<li>${episode.name}(season ${episode.season}, episode ${episode.number})</li>`);
+    $episodesList.append($item);
+  }
+  $episodesArea.show(); //Reveals the episodes area
+ }
+
+ async function getEpisodesAndDisplay(event) {
+  const showId = $(event.target).closest(".Show").data("show-id");
+
+  const episodes = await getEpisodesOfShow(showId);
+  populateEpisodes(episodes);
+ }
+
+ $showsList.on("click", ".Show-getEpisodes", getEpisodesAndDisplay);
