@@ -24,12 +24,6 @@ async function getShowsByTerm(term) {
       q: term,
     },
   });
-  console.log("show ID using []", response.data[1].show.id); //extract info from response.data array
-
-  //or use a forEach loop to get the array data
-  console.log(response.data.forEach((response) => {
-    console.log("show name using forEach loop", response.show.name);
-  }));
 
   return response.data.map((result) => {
     const show = result.show;
